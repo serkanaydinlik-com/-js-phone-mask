@@ -1,0 +1,109 @@
+<!doctype html>
+<html class="no-js" lang="tr">
+<head>
+<title>js-phone-mask</title>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const phoneInput = document.getElementById('mobileNumber');
+    let lastValue = '';
+    let lastCursorPos = 0;    
+
+    function formatPhoneNumber(value) {
+        const numbers = value.replace(/\D/g, '');
+        if (!numbers) return '';
+        
+        let formatted = '0 (';
+        if (numbers.length > 1) formatted += numbers.substring(1, 4);
+        if (numbers.length >= 4) formatted += ') ' + numbers.substring(4, 7);
+        if (numbers.length >= 7) formatted += ' ' + numbers.substring(7, 9);
+        if (numbers.length >= 9) formatted += ' ' + numbers.substring(9, 11);
+        
+        return formatted;
+    }
+
+    phoneInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace') {
+            lastValue = this.value;
+            lastCursorPos = this.selectionStart;
+             
+            const prevChar = lastValue.charAt(lastCursorPos - 1);
+            if ([' ', '(', ')'].includes(prevChar)) {
+                e.preventDefault();
+                this.setSelectionRange(lastCursorPos - 1, lastCursorPos - 1);
+            }
+        }
+    }); 
+
+    phoneInput.addEventListener('input', function(e) {
+        if (e.inputType === 'deleteContentBackward') {
+            
+            const numbersBefore = lastValue.replace(/\D/g, '');
+            const numbersAfter = this.value.replace(/\D/g, '');
+            
+            if (numbersBefore.length > numbersAfter.length) {
+                const formatted = formatPhoneNumber(numbersAfter);
+                this.value = formatted;
+                
+                // İmleç pozisyonunu belirle
+                let newCursorPos = lastCursorPos;
+                // Özel durumlar için kontrol
+                if (numbersBefore.length>10) { 
+                    newCursorPos -= 1;
+                } else if (numbersBefore.length>9) {  
+                    newCursorPos -= 2;
+                } else if (numbersBefore.length>8) {  
+                    newCursorPos -= 1;
+                } else if (numbersBefore.length>7) {  
+                    newCursorPos -= 2;
+                } else if (numbersBefore.length>6) {  
+                    newCursorPos -= 1;
+                } else if (numbersBefore.length>6) {  
+                    newCursorPos -= 1;
+                } else if (numbersBefore.length>5) {  
+                    newCursorPos -= 1;
+                } else if (numbersBefore.length>4) {  
+                    newCursorPos -= 3;
+                } else if (numbersBefore.length>3) {  
+                    newCursorPos -= 1;
+                } else if (numbersBefore.length>2) {  
+                    newCursorPos -= 1;
+                } else if (numbersBefore.length==2) {  
+                    newCursorPos -= 3;
+                }  else { 
+                    newCursorPos -= 1;
+                }
+                
+                this.setSelectionRange(Math.max(newCursorPos, 0), Math.max(newCursorPos, 0));
+                return;
+            }
+        }
+         
+        const numbers = this.value.replace(/\D/g, '');
+        this.value = formatPhoneNumber(numbers);
+        
+        if (e.inputType && e.inputType.includes('insert')) {
+            this.setSelectionRange(this.value.length, this.value.length);
+        }
+    });
+ 
+    phoneInput.addEventListener('keypress', function(e) {
+        if (!/\d/.test(e.key)) {
+            e.preventDefault();
+        }
+    });
+ 
+    phoneInput.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const pasteData = e.clipboardData.getData('text/plain').replace(/\D/g, '');
+        document.execCommand('insertText', false, pasteData);
+    });
+});
+</script>
+</head>
+<body>
+
+<p><b>Mobile Number : </b></p>
+<input name="mobile" type="tel" class="form-control" id="mobileNumber" placeholder="0 (5__) ___ __ __">
+
+</body>
+</html>
